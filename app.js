@@ -3,7 +3,7 @@
  * Puedes modificar directamente esta fecha o usar el panel de control en pantalla.
  * Formato ISO: 'YYYY-MM-DDTHH:mm:ss'
  */
-const DEFAULT_TARGET_EPOCH = 1796515200000;
+const DEFAULT_TARGET_EPOCH = 1796497200000;
 let DEFAULT_TARGET_DATE_STR = '2026-12-05T23:59:59';
 let targetDate = new Date(DEFAULT_TARGET_EPOCH);
 
