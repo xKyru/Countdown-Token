@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Contador Token Pirata Fortnite</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Gaming & Fortnite style aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Luckiest+Guy&family=Teko:wght@600;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- ========================================== -->
+    <!-- OBS PREVIEW & CONFIGURATION CONTROLS       -->
+    <!-- (Discrete floating panel, hidden when hovering out or via toggle) -->
+    <!-- ========================================== -->
+    <div id="controls-panel" class="fixed top-3 right-3 z-50 bg-slate-900/90 text-white p-3 rounded-xl border border-yellow-500/40 shadow-2xl backdrop-blur-md max-w-xs transition-all duration-300 transform translate-x-0">
+        <div class="flex items-center justify-between mb-2 pb-2 border-b border-gray-700">
+            <span class="text-xs font-bold text-yellow-400 flex items-center gap-1.5 uppercase">
+                <i class="fa-solid fa-sliders">="text-yellow-400"></i> Panel de OBS & Ajustes
+            </span>
+            <button id="btn-toggle-panel" onclick="toggleControlsMinimize()" class="text-gray-400 hover:text-white text-xs px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">
+                <i class="fa-solid fa-minus" id="minimize-icon"></i>
+            </button>
+        </div>
+
+        <div id="panel-content" class="space-y-3 text-xs">
+            <!-- Background mode selector for testing -->
+            <div>
+                <label class="block text-gray-300 font-semibold mb-1">Previsualizar fondo:</label>
+                <div class="grid grid-cols-4 gap-1">
+                    <button onclick="setBgPreview('transparent')" class="px-1.5 py-1 rounded bg-slate-800 border border-slate-600 hover:border-yellow-400 text-[10px] truncate" title="Transparente (OBS)">Transp.</button>
+                    <button onclick="setBgPreview('dark')" class="px-1.5 py-1 rounded bg-gray-900 border border-slate-600 hover:border-yellow-400 text-[10px] truncate" title="Fondo Oscuro">Oscuro</button>
+                    <button onclick="setBgPreview('chroma')" class="px-1.5 py-1 rounded bg-green-600 border border-slate-600 hover:border-yellow-400 text-[10px] text-black font-bold truncate" title="Croma Verde">Croma</button>
+                    <button onclick="setBgPreview('gameplay')" class="px-1.5 py-1 rounded bg-blue-900 border border-slate-600 hover:border-yellow-400 text-[10px] truncate" title="Simular Gameplay">Juego</button>
+                </div>
+            </div>
+
+            <!-- Target Date Input -->
+            <div>
+                <label class="block text-gray-300 font-semibold mb-1">Fecha y Hora Objetivo:</label>
+                <input type="datetime-local" id="datetime-picker" onchange="updateTargetFromInput()" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-yellow-300 focus:outline-none focus:border-yellow-400 text-xs">
+            </div>
+
+            <!-- Layout Style Switcher -->
+            <div>
+                <label class="block text-gray-300 font-semibold mb-1">Estilo de Overlay:</label>
+                <select id="layout-select" onchange="changeLayout(this.value)" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white focus:outline-none focus:border-yellow-400 text-xs">
+                    <option value="standard">Estándar (Vertical/Banner)</option>
+                    <option value="horizontal">Horizontal Compacto (Barra)</option>
+                    <option value="minimal">Minimalista Pirata</option>
+                </select>
+            </div>
+
+            <!-- Title Customizer -->
+            <div>
+                <label class="block text-gray-300 font-semibold mb-1">Título del Evento:</label>
+                <input type="text" id="title-input" value="TOKEN PIRATA FORTNITE" oninput="updateTitleText(this.value)" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white focus:outline-none focus:border-yellow-400 text-xs">
+            </div>
+
+            <!-- Quick Info / Help -->
+            <div class="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-[11px] text-yellow-200">
+                <i class="fa-solid fa-circle-info mr-1"></i>
+                <strong>Para OBS:</strong> Agrega como <em>Navegador / Browser Source</em>. Deja el fondo transparente en OBS. Presiona <kbd class="bg-black/50 px-1 rounded">H</kbd> para ocultar este panel.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MAIN COUNTDOWN OVERLAY CONTAINER          -->
+    <!-- ========================================== -->
+    <div id="overlay-wrapper" class="w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-2 transition-all duration-300">
+        
+        <!-- MAIN CARD WIDGET -->
+        <div id="main-card" class="relative w-full max-w-2xl bg-slate-950/80 border-2 border-amber-500/60 rounded-2xl p-4 md:p-6 shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
+            
+            <!-- Decorative Gold Corner Accents (Pirate Chest Feel) -->
+            <div class="decoration absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-yellow-400 rounded-tl-sm pointer-events-none"></div>
+            <div class="decoration absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-yellow-400 rounded-tr-sm pointer-events-none"></div>
+            <div class="decoration absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-yellow-400 rounded-bl-sm pointer-events-none"></div>
+            <div class="decoration absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-yellow-400 rounded-br-sm pointer-events-none"></div>
+
+            <!-- HEADER / TITLE BANNER -->
+            <div class="relative flex items-center justify-center mb-6">
+                <!-- Background Banner Line -->
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-yellow-500/30"></div>
+                </div>
+
+                <!-- Center Title Badge -->
+                <div class="relative px-6 py-2 bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-2 border-yellow-400/80 rounded-xl shadow-lg flex items-center gap-3 fortnite-banner-cut shimmer-effect">
+                    
+                    <!-- Animated Pirate Coin Icon -->
+                    <div class="w-12 h-12 flex items-center justify-center shadow-md animate-coin flex-shrink-0">
+                        <img src="/img/token.png" alt="">
+                    </div>
+
+                    <!-- Title Text -->
+                    <div class="flex flex-col items-center text-center">
+                        <!-- <span id="event-subtitle" class="text-[10px] md:text-xs font-black tracking-widest text-cyan-400 uppercase drop-shadow">
+                            <i class="fa-solid fa-skull-crossbones mr-1"></i> FIN DEL EVENTO DE TEMPORADA
+                        </span> -->
+                        <h1 id="event-title" class="font-gaming text-2xl md:text-4xl text-gold-gradient tracking-wider uppercase text-stroke-black">
+                            TOKEN PIRATA FORTNITE
+                        </h1>
+                    </div>
+
+                    <!-- Secondary Pirate Skull Badge -->
+                    <!-- <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-700 border border-cyan-200 flex items-center justify-center shadow-md flex-shrink-0">
+                        <i class="fa-solid fa-anchor text-slate-950 text-sm md:text-base"></i>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- TIMER COUNTDOWN DISPLAY GRID -->
+            <div id="timer-grid" class="grid grid-cols-4 gap-2 md:gap-4 relative z-10">
+                
+                <!-- DAYS CARD -->
+                <div class="timer-card fortnite-cut rounded-xl p-2 md:p-4 flex flex-col items-center justify-center text-center group hover:border-yellow-400">
+                    <div class="text-xs md:text-sm font-bold text-amber-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-calendar-days text-[10px] opacity-75"></i> Días
+                    </div>
+                    <div class="relative w-full overflow-hidden">
+                        <span id="days" class="font-numbers text-5xl md:text-7xl font-bold text-gold-gradient block text-stroke-black">00</span>
+                    </div>
+                    <div class="w-full bg-yellow-500/20 h-1 rounded-full mt-1 overflow-hidden">
+                        <div id="days-bar" class="bg-yellow-400 h-full w-full transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <!-- HOURS CARD -->
+                <div class="timer-card fortnite-cut rounded-xl p-2 md:p-4 flex flex-col items-center justify-center text-center group hover:border-yellow-400">
+                    <div class="text-xs md:text-sm font-bold text-amber-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-clock text-[10px] opacity-75"></i> Horas
+                    </div>
+                    <div class="relative w-full overflow-hidden">
+                        <span id="hours" class="font-numbers text-5xl md:text-7xl font-bold text-gold-gradient block text-stroke-black">00</span>
+                    </div>
+                    <div class="w-full bg-yellow-500/20 h-1 rounded-full mt-1 overflow-hidden">
+                        <div id="hours-bar" class="bg-yellow-400 h-full w-full transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <!-- MINUTES CARD -->
+                <div class="timer-card fortnite-cut rounded-xl p-2 md:p-4 flex flex-col items-center justify-center text-center group hover:border-cyan-400">
+                    <div class="text-xs md:text-sm font-bold text-cyan-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-hourglass-half text-[10px] opacity-75"></i> Minutos
+                    </div>
+                    <div class="relative w-full overflow-hidden">
+                        <span id="minutes" class="font-numbers text-5xl md:text-7xl font-bold text-cyan-gradient block text-stroke-black">00</span>
+                    </div>
+                    <div class="w-full bg-cyan-500/20 h-1 rounded-full mt-1 overflow-hidden">
+                        <div id="minutes-bar" class="bg-cyan-400 h-full w-full transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <!-- SECONDS CARD -->
+                <div class="timer-card fortnite-cut rounded-xl p-2 md:p-4 flex flex-col items-center justify-center text-center group hover:border-cyan-400 glow-cyan">
+                    <div class="text-xs md:text-sm font-bold text-cyan-300 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-stopwatch text-[10px] opacity-75 animate-pulse"></i> Segundos
+                    </div>
+                    <div class="relative w-full overflow-hidden">
+                        <span id="seconds" class="font-numbers text-5xl md:text-7xl font-bold text-cyan-gradient block text-stroke-black">00</span>
+                    </div>
+                    <div class="w-full bg-cyan-500/20 h-1 rounded-full mt-1 overflow-hidden">
+                        <div id="seconds-bar" class="bg-cyan-300 h-full w-full transition-all duration-300"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- EVENT FINISHED MESSAGE CONTAINER (Hidden until target reached) -->
+            <div id="finished-message" class="hidden my-4 p-6 bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-600 rounded-xl border-4 border-yellow-200 text-center shadow-2xl animate-bounce">
+                <h2 class="font-gaming text-3xl md:text-5xl text-slate-950 uppercase text-stroke-black tracking-wider">
+                    ¡EVENTO FINALIZADO!
+                </h2>
+                <p class="text-slate-950 font-black text-sm md:text-lg uppercase tracking-wide mt-1">
+                    El Token Pirata de Fortnite ha expirado
+                </p>
+            </div>
+
+            <!-- FOOTER INFO BAR -->
+            <!-- <div id="footer-bar" class="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 gap-2">
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-flag-checkered text-yellow-400"></i>
+                    <span>Fecha límite: <strong id="target-date-display" class="text-yellow-300 font-bold">Sábado, 5 de Diciembre 2026</strong></span>
+                </div>
+                
+               
+                <div class="flex items-center gap-2 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-700">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="font-semibold text-gray-300 tracking-wider text-[10px] uppercase">EN VIVO EN STREAM</span>
+                </div>
+            </div> -->
+
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC                           -->
+    <!-- ========================================== -->
+    <script src="app.js"></script>
+</body>
+</html>
